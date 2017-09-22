@@ -11,7 +11,7 @@ namespace DirectoryCleaner
 
         static void Main(string[] args)
         {
-            
+
             bool firstRun = false;
 
             XmlDocument xmlDocument = new XmlDocument();
@@ -91,7 +91,7 @@ namespace DirectoryCleaner
                 writer.WriteStartElement("feed", "http://www.w3.org/2005/Atom");
                 writer.WriteStartElement("entry");
                 writer.WriteStartElement("Directories");
-                writer.WriteElementString("Directory", homeDir );
+                writer.WriteElementString("Directory", homeDir);
                 writer.WriteEndElement();
                 writer.WriteEndElement();
                 writer.WriteEndElement();
@@ -102,18 +102,30 @@ namespace DirectoryCleaner
 
         private static void CleanDirectory(string directoryPath)
         {
+
             try
             {
-                Array.ForEach(Directory.GetFiles(directoryPath), File.Delete);
+                string[] filePaths = Directory.GetFiles(directoryPath);
+                foreach (string filePath in filePaths)
+                {
+                    try
+                    {
+                        File.Delete(filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex, "Something went wrong trying to delete the file: " + ex);
+                    }
+                }
+
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Something went wrong trying to clean the directory: " + ex);
+                logger.Error(ex, "Something went wrong: " + ex);
             }
-           
         }
-
     }
 }
+
 
 
