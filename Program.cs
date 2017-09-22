@@ -1,28 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
+using NLog;
 
 namespace DirectoryCleaner
 {
     class Program
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         static void Main(string[] args)
         {
+            
             bool firstRun = false;
+
             XmlDocument xmlDocument = new XmlDocument();
+
             try
             {
-                xmlDocument.Load("DirectoryCleaner.Config");
+                xmlDocument.Load("DirectoryCleaner.config");
             }
-            catch
+            catch (FileNotFoundException) // this is the default behavior
             {
                 firstRun = true;
                 CreateNewConfigFile(xmlDocument);
+                logger.Warn(
+                    "Configuration program has been written. Modify the 'DirectoryCleaner.config' file before running the program again!");
+                logger.Warn("Otherwise all the files on your desktop will be deleted.");
+                Console.WriteLine(
+                    "Configuration program has been written. Modify the 'DirectoryCleaner.config' file before running the program again!");
+                Console.WriteLine("Otherwise all the files on your desktop will be deleted.");
+            }
+            catch (SystemException ex) // this is when something actually goes wrong
+            {
+                logger.Error(ex, "Something went wrong trying to load the 'DirectoryCleaner.config' file: " + ex);
             }
 
             if (!firstRun)
@@ -32,34 +43,25 @@ namespace DirectoryCleaner
 
                 ParseXML(xmlDocument, xmlnm);
             }
-            else
-            {
-                Console.WriteLine("Configuration program has been written. Modify DirectoryCleaner.Config before running the program again!");
-            }
-
 
         }
 
         private static void CreateNewConfigFile(XmlDocument xmlDocument)
         {
-            string fileName = "DirectoryCleaner.Config";
-            File.Create(fileName).Dispose();
-            WriteMyXML();
-            xmlDocument.Load("DirectoryCleaner.Config");
+            try
+            {
+                string fileName = "DirectoryCleaner.config";
+                File.Create(fileName).Dispose();
+                CreateConfigFile();
+                xmlDocument.Load("DirectoryCleaner.config");
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Something went wrong creating new config file: " + ex);
+            }
         }
 
-        /// <summary>
-        /// Decrypt the given string.  Assumes the string was encrypted using 
-        /// EncryptStringAES(), using an identical sharedSecret.
-        /// </summary>
-        /// <param name="cipherText">The text to decrypt.</param>
-        /// <param name="sharedSecret">A password used to generate a key for decryption.</param>
 
-        /// <summary>
-        ///  here is the function name
-        /// </summary>
-        /// <param name="xmlFile">An xmldocument object fo the file you want to parse</param>
-        /// <param name="xmlnm">your xml name space</param>
         public static void ParseXML(XmlDocument xmlFile, XmlNamespaceManager xmlnm)
         {
             XmlNodeList nodes = xmlFile.SelectNodes("//ns:Directories", xmlnm);
@@ -75,16 +77,16 @@ namespace DirectoryCleaner
             }
         }
 
-        public static void WriteMyXML()
+        public static void CreateConfigFile()
         {
             XmlWriterSettings mySettings = new XmlWriterSettings();
             mySettings.NewLineOnAttributes = true;
             mySettings.Encoding = System.Text.Encoding.UTF8;
             mySettings.Indent = true;
             mySettings.NewLineHandling = NewLineHandling.Replace;
-            using (XmlWriter writer = XmlWriter.Create("DirectoryCleaner.Config", mySettings))
+            using (XmlWriter writer = XmlWriter.Create("DirectoryCleaner.config", mySettings))
             {
-                string homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+                string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 writer.WriteStartDocument();
                 writer.WriteStartElement("feed", "http://www.w3.org/2005/Atom");
                 writer.WriteStartElement("entry");
@@ -96,31 +98,19 @@ namespace DirectoryCleaner
                 writer.WriteEndDocument();
             }
 
-
-
-
-        }
-
-        private static byte[] ReadByteArray(Stream s)
-        {
-            byte[] rawLength = new byte[sizeof(int)];
-            if (s.Read(rawLength, 0, rawLength.Length) != rawLength.Length)
-            {
-                throw new SystemException("Stream did not contain properly formatted byte array");
-            }
-
-            byte[] buffer = new byte[BitConverter.ToInt32(rawLength, 0)];
-            if (s.Read(buffer, 0, buffer.Length) != buffer.Length)
-            {
-                throw new SystemException("Did not read byte array properly");
-            }
-
-            return buffer;
         }
 
         private static void CleanDirectory(string directoryPath)
         {
-           Array.ForEach(Directory.GetFiles(directoryPath), File.Delete); 
+            try
+            {
+                Array.ForEach(Directory.GetFiles(directoryPath), File.Delete);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Something went wrong trying to clean the directory: " + ex);
+            }
+           
         }
 
     }

@@ -1,4 +1,4 @@
-On first run, the program will generate a DirectoryCleaner.Config file. 
+On first run, the program will generate a DirectoryCleaner.config file. 
 
 The default directory in the config file is the user's desktop.
 
