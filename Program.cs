@@ -110,7 +110,7 @@ namespace DirectoryCleaner
                 {
                     try
                     {
-                        FileOperationAPIWrapper.MoveToRecycleBin(filePath);
+                        FileOperationApiWrapper.MoveToRecycleBin(filePath);
                     }
                     catch (Exception ex)
                     {
