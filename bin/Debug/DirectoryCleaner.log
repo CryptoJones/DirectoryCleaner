@@ -1,8 +1,0 @@
-2017-09-22 09:24:54.7753|WARN|DirectoryCleaner.Program|Configuration program has been written. Modify the 'DirectoryCleaner.config' file before running the program again!
-2017-09-22 09:24:54.9138|WARN|DirectoryCleaner.Program|Otherwise all the files on your desktop will be deleted.
-2017-09-22 09:28:21.9604|ERROR|DirectoryCleaner.Program|Something went wrong trying to clean the directory: System.UnauthorizedAccessException: Access to the path 'C:\Users\akclark\Desktop\New Microsoft PowerPoint Presentation.pptx' is denied.
-   at System.IO.__Error.WinIOError(Int32 errorCode, String maybeFullPath)
-   at System.IO.File.InternalDelete(String path, Boolean checkHost)
-   at System.IO.File.Delete(String path)
-   at System.Array.ForEach[T](T[] array, Action`1 action)
-   at DirectoryCleaner.Program.CleanDirectory(String directoryPath) in C:\Users\akclark\Source\repos\DirectoryCleaner\Program.cs:line 107
